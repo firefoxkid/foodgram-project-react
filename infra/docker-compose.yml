@@ -7,6 +7,15 @@ services:
       dockerfile: Dockerfile
     volumes:
       - ../frontend/:/app/result_build/
+
+  # web:
+  #   #context: ../frontend
+  #   image: firefoxkid/foodgram
+  #   restart: always
+  #   # volumes:
+  #   #   - static_value:/app/static/
+  #   #   - media_value:/app/media/
+  
   nginx:
     image: nginx:1.19.3
     ports:
