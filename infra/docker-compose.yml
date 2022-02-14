@@ -1,6 +1,30 @@
 version: '3.3'
 services:
 
+
+  db:
+    image: postgres:12-alpine
+    restart: always
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    env_file:
+      - ../foodgram/.env
+    ports:
+      - "5432:5432"
+
+  backend:
+  # image  - прописать имя контейнера image: firefoxkid/foodgram
+    build:
+     context: ../foodgram
+     dockerfile: Dockerfile
+    restart: always
+    volumes:
+      - static_value:/app/static/
+      - media_value:/app/media/
+    depends_on:
+     # - db # or localhost
+      - db
+
   frontend:
     build:
       context: ../frontend
@@ -8,19 +32,20 @@ services:
     volumes:
       - ../frontend/:/app/result_build/
 
-  # web:
-  #   #context: ../frontend
-  #   image: firefoxkid/foodgram
-  #   restart: always
-  #   # volumes:
-  #   #   - static_value:/app/static/
-  #   #   - media_value:/app/media/
-  
   nginx:
     image: nginx:1.19.3
     ports:
       - "80:80"
     volumes:
       - ./nginx.conf:/etc/nginx/conf.d/default.conf
+      - static_value:/static/
+      - media_value:/media/
       - ../frontend/build:/usr/share/nginx/html/
       - ../docs/:/usr/share/nginx/html/api/docs/
+    depends_on:
+      - backend
+
+volumes: 
+  static_value:
+  media_value:
+  postgres_data:

@@ -5,7 +5,7 @@ from django.db import models
 from django.db.models import Exists, OuterRef
 
 
-class User_queryset(models.QuerySet):
+class UserQueryset(models.QuerySet):
     def user_annotations_add(self, user_id):
         return self.annotate(
             is_subscribed=Exists(
@@ -16,7 +16,9 @@ class User_queryset(models.QuerySet):
         )
 
 
-class MyUserManager(BaseUserManager):
+class CustomUserManager(BaseUserManager):
+    objects = UserQueryset.as_manager()
+
     def _create_user(self, email, username, password, **extra_fields):
         if not email:
             raise ValueError("Вы не ввели Email")
@@ -38,7 +40,6 @@ class MyUserManager(BaseUserManager):
         return self._create_user(email, username, password,
                                  is_staff=True, is_superuser=True,
                                  **extra_fields)
-    objects = User_queryset.as_manager()
 
 
 class User(AbstractBaseUser, PermissionsMixin):
@@ -77,6 +78,15 @@ class User(AbstractBaseUser, PermissionsMixin):
         default=False,
         help_text='Designates whether the user can log into this admin site.',
     )
+    bio = models.TextField(verbose_name='biography',
+                           blank=True)
+    email = models.EmailField(verbose_name='email address',
+                              unique=True)
+    is_active = models.BooleanField(default=True,
+                                    verbose_name='user is active')
+    USERNAME_FIELD = 'username'
+    REQUIRED_FIELDS = ['email']
+    objects = CustomUserManager()
 
     def get_full_name(self):
         """
@@ -84,18 +94,6 @@ class User(AbstractBaseUser, PermissionsMixin):
         """
         full_name = '%s %s' % (self.first_name, self.last_name)
         return full_name.strip()
-    bio = models.TextField(verbose_name='biography',
-                           blank=True)
-    email = models.EmailField(verbose_name='email address',
-                              unique=True)
-    is_active = models.BooleanField(default=True)
-    USERNAME_FIELD = 'username'
-    REQUIRED_FIELDS = ['email']
-
-    objects = MyUserManager()
-
-    def __str__(self):
-        return '%s (%s)' % (self.get_full_name(), self.email)
 
     @property
     def is_admin(self):
@@ -104,6 +102,13 @@ class User(AbstractBaseUser, PermissionsMixin):
     @property
     def is_moderator(self):
         return self.role == 'moderator'
+
+    class Meta:
+        verbose_name = 'Пользователь'
+        verbose_name_plural = 'Пользователи'
+
+    def __str__(self):
+        return '%s (%s)' % (self.get_full_name(), self.email)
 
 
 class ConfirmCodes(models.Model):
@@ -116,18 +121,15 @@ class ConfirmCodes(models.Model):
                                 null=True,
                                 blank=True,
                                 verbose_name='registratoin code')
-    code_date = models.DateTimeField('Дата создания кода', auto_now_add=True)
+    code_date = models.DateTimeField(auto_now_add=True,
+                                     verbose_name='Дата создания кода')
+
+    class Meta:
+        verbose_name = 'Код подтверждения'
+        verbose_name_plural = 'Коды подтверждения'
 
 
 class Follow(models.Model):
-    class Meta:
-        constraints = [
-            models.CheckConstraint(
-                name="prevent_self_follow",
-                check=~models.Q(user=models.F("author")),
-            ),
-        ]
-    """Подписка Кто на кого"""
     user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
@@ -143,3 +145,13 @@ class Follow(models.Model):
 
     def __str__(self):
         return f'Результат: {self.user}  подписался на {self.author}'
+
+    class Meta:
+        constraints = [
+            models.CheckConstraint(
+                name="prevent_self_follow",
+                check=~models.Q(user=models.F("author")),
+            ),
+        ]
+        verbose_name = 'Подписка'
+        verbose_name_plural = 'Подписки'
