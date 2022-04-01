@@ -1,5 +1,6 @@
 from django.core.validators import MinValueValidator
 from django.db import models
+from django.db.models import Exists, OuterRef
 from users.models import User
 
 
@@ -36,6 +37,22 @@ class Tag(models.Model):
     def __str__(self):
         return f'{self.name}'
 
+
+class RecipeQuerySet(models.QuerySet):
+    def add_flags(self, user_id):
+        return self.annotate(
+            is_favorited=Exists(
+                Favorite.objects.filter(
+                    user_id=user_id, recipe=OuterRef('id')
+                )
+            )
+        ).annotate(
+            is_in_shopping_cart=Exists(
+                ShoppingCart.objects.filter(
+                    user_id=user_id, recipe=OuterRef('id')
+                )
+            )
+        )
 
 class Recipe(models.Model):
     name = models.CharField(
@@ -78,6 +95,7 @@ class Recipe(models.Model):
     )
     pub_date = models.DateTimeField(verbose_name="Дата публикации",
                                     auto_now_add=True)
+    objects = RecipeQuerySet.as_manager()
 
     class Meta:
         ordering = ["-pub_date"]

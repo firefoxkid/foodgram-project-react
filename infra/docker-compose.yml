@@ -22,7 +22,6 @@ services:
       - static_value:/app/static/
       - media_value:/app/media/
     depends_on:
-     # - db # or localhost
       - db
 
   frontend:
