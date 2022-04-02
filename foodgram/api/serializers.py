@@ -1,9 +1,10 @@
 from django.shortcuts import get_object_or_404
 from djoser.serializers import UserCreateSerializer, UserSerializer
-from recipes.models import (Favorite, Ingredient, IngredientInRecipe, Recipe,
-                            ShoppingCart, Tag)
 from rest_framework import serializers
 from rest_framework.serializers import SerializerMethodField, ValidationError
+
+from recipes.models import (Favorite, Ingredient, IngredientInRecipe, Recipe,
+                            ShoppingCart, Tag)
 from users.models import Follow, User
 
 from .fields import ImageField, TagsField
@@ -75,31 +76,9 @@ class RecipeGetSerializer(serializers.ModelSerializer):
         read_only=True,
         many=True
     )
-    is_favorited = serializers.BooleanField(read_only=True)
-    is_in_shopping_cart = serializers.BooleanField(read_only=True)
-    image = ImageField()
-
-    class Meta:
-        model = Recipe
-        fields = ('id', 'tags', 'author', 'ingredients', 'is_favorited',
-                  'is_in_shopping_cart', 'name', 'image', 'text',
-                  'cooking_time')
-
-
-class RecipeWriteSerializer(serializers.ModelSerializer):
-    ingredients = IngredientRecipeSerializer(
-        source='ingredient_to_recipe',
-        many=True
-    )
-    tags = serializers.PrimaryKeyRelatedField(
-        many=True,
-        queryset=Tag.objects.all(),
-        pk_field=TagsField()
-    )
-    author = CustomUserSerializer(read_only=True)
-    image = ImageField()
     is_favorited = serializers.SerializerMethodField(read_only=True)
     is_in_shopping_cart = serializers.SerializerMethodField(read_only=True)
+    image = ImageField()
 
     def get_is_favorited(self, recipe):
         user = self.context.get('request').user
@@ -112,6 +91,24 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
         if user.is_anonymous:
             return False
         return ShoppingCart.objects.filter(user=user, recipe=recipe).exists()
+
+    class Meta:
+        model = Recipe
+        fields = ('id', 'tags', 'author', 'ingredients', 'is_favorited',
+                  'is_in_shopping_cart', 'name', 'image', 'text',
+                  'cooking_time')
+
+
+class RecipeWriteSerializer(RecipeGetSerializer):
+    ingredients = IngredientRecipeSerializer(
+        source='ingredient_to_recipe',
+        many=True
+    )
+    tags = serializers.PrimaryKeyRelatedField(
+        many=True,
+        queryset=Tag.objects.all(),
+        pk_field=TagsField()
+    )
 
     def validate_image(self, image):
         if not image:
@@ -269,7 +266,26 @@ class SubscriptionSerializer(serializers.ModelSerializer):
 
 
 class FavoriteSerializer (serializers.ModelSerializer):
+    id = serializers.IntegerField(source='recipe.id', read_only=True)
+    name = serializers.CharField(source='recipe.name', read_only=True)
+    cooking_time = serializers.CharField(source='recipe.cooking_time',
+                                         read_only=True)
+    image = serializers.CharField(source='recipe.image', read_only=True)
+
+    def validate(self, data):
+        request = self.context.get('request')
+        if request.method == 'DELETE':
+            return data
+
+        recipe_id = request.parser_context.get('kwargs').get('recipe_id')
+        recipe = get_object_or_404(Recipe, id=recipe_id)
+        user = self.context['request'].user
+
+        if Favorite.objects.filter(recipe=recipe, user=user).exists():
+            raise serializers.ValidationError(
+                'Нельзя добавить в избранное один рецепт дважды')
+        return data
 
     class Meta:
-        model = Recipe
-        fields = ('id', 'name', 'image', 'cooking_time')
+        model = Favorite
+        fields = ('id', 'name', 'cooking_time', 'image')

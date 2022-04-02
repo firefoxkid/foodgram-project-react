@@ -3,8 +3,9 @@ import base64
 from django.core.files.base import ContentFile
 from django.forms.models import model_to_dict
 from django.shortcuts import get_object_or_404
-from recipes.models import Tag
 from rest_framework import serializers
+
+from recipes.models import Tag
 
 
 class ImageField(serializers.Field):

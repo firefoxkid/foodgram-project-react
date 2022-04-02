@@ -1,20 +1,23 @@
 from django.db.models import Count, Exists, OuterRef, Sum
-from django.http import HttpResponse
+from django.http import Http404, HttpResponse
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from djoser.views import UserViewSet
-from recipes.models import (Favorite, Ingredient, IngredientInRecipe, Recipe,
-                            ShoppingCart, Tag)
-from rest_framework import filters, mixins, status, viewsets
+from rest_framework import filters, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.generics import ListAPIView
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.serializers import ValidationError
 from rest_framework.viewsets import ReadOnlyModelViewSet
+
+from recipes.models import (Favorite, Ingredient, IngredientInRecipe, Recipe,
+                            ShoppingCart, Tag)
 from users.models import Follow, User
 
 from .filters import RecipeFilter
-from .mixins import CreateDestroyMixin, ListOneMixin
+from .mixins import (CreateDestroyMixin, CustomShoppingFavoriteMixin,
+                     ListOneMixin)
 from .pagination import PaginatorLimit
 from .permissions import OwnerOrReadOnly
 from .serializers import (CustomUserSerializer, FavoriteSerializer,
@@ -36,47 +39,6 @@ class CustomUserViewSet(UserViewSet):
     )
     def me(self, request, *args, **kwargs):
         return super(CustomUserViewSet, self).me(request, *args, **kwargs)
-
-
-class SubscriptionListView(ListAPIView):
-    model = Follow
-    serializer_class = SubscriptionSerializer
-    permission_classes = (IsAuthenticated,)
-
-    def get_queryset(self):
-        user_id = self.request.user.id
-        return (self.request.user.follower.all()
-                .annotate(recipes_count=Count('author__recipes'))
-                .annotate(is_subscribed=Exists(
-                    Follow.objects.filter(
-                        user_id=user_id, author__id=OuterRef('id')
-                    )
-                )))
-
-    def perform_create(self, serializer):
-        author = get_object_or_404(User, id=self.kwargs.get('author_id'))
-        serializer.save(user=self.request.user, author=author)
-
-
-class SubscriptionViewSet(CreateDestroyMixin):
-    model = Follow
-    serializer_class = SubscriptionSerializer
-    permission_classes = (IsAuthenticated,)
-
-    def get_queryset(self):
-        author = get_object_or_404(User, id=self.kwargs.get('author_id'))
-        return Follow.objects.filter(author=author)
-
-    def perform_create(self, serializer):
-        author = get_object_or_404(User, id=self.kwargs.get('author_id'))
-        serializer.save(user=self.request.user, author=author)
-
-    def destroy(self, request, *args, **kwargs):
-        author = get_object_or_404(User, id=self.kwargs.get('author_id'))
-        user = self.request.user
-        instance = get_object_or_404(Follow, author=author, user=user)
-        self.perform_destroy(instance)
-        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class TagViewSet(ReadOnlyModelViewSet):
@@ -110,20 +72,6 @@ class RecipeViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
 
-    @action(detail=True, methods=['post', 'delete'],
-            permission_classes=[IsAuthenticated])
-    def favorite(self, request, pk=None):
-        instance = Favorite.objects.filter(user=request.user, recipe__id=pk)
-        if request.method == 'POST' and not instance.exists():
-            recipe = get_object_or_404(Recipe, id=pk)
-            Favorite.objects.create(user=request.user, recipe=recipe)
-            serializer = FavoriteSerializer(recipe)
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        elif request.method == 'DELETE' and instance.exists():
-            instance.delete()
-            return Response(status=status.HTTP_204_NO_CONTENT)
-        return Response(status=status.HTTP_400_BAD_REQUEST)
-
     @action(detail=False, methods=['get'],
             permission_classes=[IsAuthenticated])
     def download_shopping_cart(self, request):
@@ -148,26 +96,58 @@ class RecipeViewSet(viewsets.ModelViewSet):
         return queryset.add_flags(self.request.user.id)
 
 
-class ShoppingListViewSet(mixins.CreateModelMixin,
-                          mixins.DestroyModelMixin, viewsets.GenericViewSet):
-    model = ShoppingCart
-    serializer_class = ShoppingListSerializer
+class SubscriptionListView(ListAPIView):
+    model = Follow
+    serializer_class = SubscriptionSerializer
     permission_classes = (IsAuthenticated,)
-    queryset = ShoppingCart.objects.all()
 
     def get_queryset(self):
-        recipe = get_object_or_404(Recipe, id=self.kwargs.get('recipe_id'))
-        return ShoppingCart.objects.filter(recipe=recipe)
+        user_id = self.request.user.id
+        return (self.request.user.follower.all()
+                .annotate(recipes_count=Count('author__recipes'))
+                .annotate(is_subscribed=Exists(
+                    Follow.objects.filter(
+                        user_id=user_id, author__id=OuterRef('id')
+                    )
+                )))
 
     def perform_create(self, serializer):
-        recipe = get_object_or_404(Recipe, id=self.kwargs.get('recipe_id'))
-        if ShoppingCart.objects.filter(recipe=recipe):
-            raise ValueError('Рецепт уже в корзине!!')
-        serializer.save(user=self.request.user, recipe=recipe)
+        author = get_object_or_404(User, id=self.kwargs.get('author_id'))
+        serializer.save(user=self.request.user, author=author)
 
-    def destroy(self, request, *args, **kwargs):
-        recipe = get_object_or_404(Recipe, id=self.kwargs.get('recipe_id'))
+
+class SubscriptionViewSet(CreateDestroyMixin):
+    model = Follow
+    serializer_class = SubscriptionSerializer
+    permission_classes = (IsAuthenticated,)
+    lookup_field = 'author_id'
+
+    def get_queryset(self):
+        author = get_object_or_404(User, id=self.kwargs.get(self.lookup_field))
+        return Follow.objects.filter(author=author)
+
+    def perform_create(self, serializer):
+        author = get_object_or_404(User, id=self.kwargs.get(self.lookup_field))
+        serializer.save(user=self.request.user, author=author)
+
+    def perform_destroy(self, instance):
+        author = get_object_or_404(User, id=self.kwargs.get(self.lookup_field))
         user = self.request.user
-        instance = get_object_or_404(ShoppingCart, recipe=recipe, user=user)
-        self.perform_destroy(instance)
+        instance = get_object_or_404(Follow, author=author, user=user)
+        try:
+            instance.delete()
+        except Http404:
+            raise ValidationError('Не найден ОБЪЕКТ для удаления')
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class ShoppingListViewSet(CustomShoppingFavoriteMixin):
+    model = ShoppingCart
+    serializer_class = ShoppingListSerializer
+    queryset = ShoppingCart.objects.all()
+
+
+class FavoriteViewSet(CustomShoppingFavoriteMixin):
+    model = Favorite
+    serializer_class = FavoriteSerializer
+    queryset = Favorite.objects.all()
