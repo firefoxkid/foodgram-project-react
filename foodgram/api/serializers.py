@@ -6,7 +6,6 @@ from rest_framework.serializers import SerializerMethodField, ValidationError
 from recipes.models import (Favorite, Ingredient, IngredientInRecipe, Recipe,
                             ShoppingCart, Tag)
 from users.models import Follow, User
-
 from .fields import ImageField, TagsField
 
 
