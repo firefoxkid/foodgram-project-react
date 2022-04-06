@@ -11,7 +11,7 @@ from recipes.models import Tag  # isort:skip
 class ImageField(serializers.Field):
 
     def to_representation(self, value):
-        return 'Ваша картинка'
+        return value.url
 
     def to_internal_value(self, data):
         format, imgstr = data.split(';base64,')
