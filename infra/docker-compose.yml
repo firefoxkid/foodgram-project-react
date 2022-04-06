@@ -13,11 +13,11 @@ services:
       - "5432:5432"
 
   backend:
-  # image  - прописать имя контейнера image: firefoxkid/foodgram
-    build:
-     context: ../foodgram
-     dockerfile: Dockerfile
-    restart: always
+    image: firefoxkid/foodgram:latest
+    #build:
+    # context: ../foodgram
+    # dockerfile: Dockerfile
+    #restart: always
     volumes:
       - static_value:/app/static/
       - media_value:/app/media/
@@ -48,3 +48,4 @@ volumes:
   static_value:
   media_value:
   postgres_data:
+  result_build:
