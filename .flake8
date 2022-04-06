@@ -9,6 +9,6 @@ exclude =
     ./env
     .env.example
     env.example
-    ./foodgram/foodgram/settings.py
-    ./foodgram/recipes/migrations    
-    ./foodgram/users/migrations
+    foodgram/foodgram/settings.py
+    foodgram/recipes/migrations    
+    foodgram/users/migrations
