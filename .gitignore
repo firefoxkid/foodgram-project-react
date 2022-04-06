@@ -133,3 +133,5 @@ dmypy.json
 .vscode/
 media/
 foodgram/media/
+foodgram/foodgram/media/
+vscode/

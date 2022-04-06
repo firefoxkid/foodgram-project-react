@@ -3,10 +3,11 @@ from djoser.serializers import UserCreateSerializer, UserSerializer
 from rest_framework import serializers
 from rest_framework.serializers import SerializerMethodField, ValidationError
 
-from recipes.models import (Favorite, Ingredient, IngredientInRecipe, Recipe,
-                            ShoppingCart, Tag)
-from users.models import Follow, User
-from .fields import ImageField, TagsField
+from recipes.models import (Favorite,  # isort:skip
+                            Ingredient, IngredientInRecipe,   # isort:skip
+                            Recipe, ShoppingCart, Tag)  # isort:skip
+from users.models import Follow, User   # isort:skip
+from .fields import ImageField, TagsField  # isort:skip
 
 
 class CustomUserCreateSerializer(UserCreateSerializer):

@@ -11,9 +11,6 @@ from rest_framework.response import Response
 from rest_framework.serializers import ValidationError
 from rest_framework.viewsets import ReadOnlyModelViewSet
 
-from recipes.models import (Favorite, Ingredient, IngredientInRecipe, Recipe,
-                            ShoppingCart, Tag)
-from users.models import Follow, User
 from .filters import RecipeFilter
 from .mixins import (CreateDestroyMixin, CustomShoppingFavoriteMixin,
                      ListOneMixin)
@@ -23,6 +20,11 @@ from .serializers import (CustomUserSerializer, FavoriteSerializer,
                           IngredientSerializer, RecipeGetSerializer,
                           RecipeWriteSerializer, ShoppingListSerializer,
                           SubscriptionSerializer, TagSerializer)
+
+from recipes.models import (Favorite, Ingredient,  # isort:skip
+                            IngredientInRecipe, Recipe,  # isort:skip
+                            ShoppingCart, Tag)  # isort:skip
+from users.models import Follow, User  # isort:skip
 
 
 class CustomUserViewSet(UserViewSet):

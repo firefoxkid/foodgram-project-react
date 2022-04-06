@@ -5,7 +5,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.serializers import ValidationError
 
-from recipes.models import Recipe
+from recipes.models import Recipe  # isort:skip
 
 
 class CreateListDeleteViewSet(mixins.CreateModelMixin,

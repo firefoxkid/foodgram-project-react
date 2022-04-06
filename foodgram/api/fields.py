@@ -3,9 +3,9 @@ import base64
 from django.core.files.base import ContentFile
 from django.forms.models import model_to_dict
 from django.shortcuts import get_object_or_404
-from rest_framework import serializers
+from rest_framework import serializers  # isort:skip
 
-from recipes.models import Tag
+from recipes.models import Tag         # isort:skip
 
 
 class ImageField(serializers.Field):
