@@ -49,6 +49,9 @@ jobs:
     needs: build_and_push_to_docker_hub
     if: github.ref == 'refs/heads/master'
     steps:
+    - name: archive frontend
+      run: |
+        tar -cvf deploy.tar ./frontend/
     - name: copy frontend using ssh
       uses: appleboy/scp-action@master
       with:
