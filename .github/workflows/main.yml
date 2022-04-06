@@ -49,6 +49,7 @@ jobs:
     needs: build_and_push_to_docker_hub
     if: github.ref == 'refs/heads/master'
     steps:
+    - uses: actions/checkout@master
     - name: copy frontend using ssh
       uses: appleboy/scp-action@master
       with:
@@ -59,7 +60,7 @@ jobs:
         source: "frontend/*"  #  маска для архиврования, какие файлы положить
         # source: ./frontend
         target: frontend
-        strip_components: 1  #  отреж кусок пути от папки внутри архива (в архиве есть папка и получится подпапка)
+        strip_components: 1  #  отреж кусок пути от папки внутри архива (в архиве есть папка и получится)
     - name: executing remote ssh commands to deploy
       uses: appleboy/ssh-action@master
       with:
