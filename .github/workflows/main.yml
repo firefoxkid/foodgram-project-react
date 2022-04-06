@@ -50,6 +50,17 @@ jobs:
     if: github.ref == 'refs/heads/master'
     steps:
     - uses: actions/checkout@master
+    - name: copy docker-compose file to srv
+      uses: appleboy/scp-action@master
+      with:
+        host: ${{ secrets.HOST }}
+        username: ${{ secrets.USER }}
+        key: ${{ secrets.SSH_KEY }}
+        passphrase: ${{ secrets.PASSPHRASE }}
+        source: infra/docker-compose.yml  #  маска для архиврования, какие файлы положить
+        # source: ./frontend
+        target: docker-compose.yml
+    - uses: actions/checkout@master
     - name: copy frontend using ssh
       uses: appleboy/scp-action@master
       with:
