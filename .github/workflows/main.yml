@@ -57,10 +57,10 @@ jobs:
         key: ${{ secrets.SSH_KEY }}
         passphrase: ${{ secrets.PASSPHRASE }}
         script: |
+          sudo touch .env
           sudo docker-compose down
           sudo docker-compose rm backend
           sudo docker-compose rm nginx
-          touch .env
           echo DB_ENGINE=${{ secrets.DB_ENGINE }} >> .env
           echo DB_NAME=${{ secrets.DB_NAME }} >> .env
           echo POSTGRES_USER=${{ secrets.POSTGRES_USER }} >> .env
