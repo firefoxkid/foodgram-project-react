@@ -9,7 +9,6 @@ from rest_framework.decorators import action
 from rest_framework.generics import ListAPIView
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
-#  from rest_framework.serializers import ValidationError
 from rest_framework.viewsets import ReadOnlyModelViewSet
 
 from .filters import RecipeFilter
@@ -95,10 +94,6 @@ class RecipeViewSet(viewsets.ModelViewSet):
         response['Content-Disposition'] = attachment
         return response
 
-    # def get_queryset(self):
-    #     queryset = Recipe.objects.all()
-    #     return queryset.add_flags(self.request.user.id)
-
 
 class SubscriptionListView(ListAPIView):
     model = Follow
@@ -134,16 +129,6 @@ class SubscriptionViewSet(CreateDestroyMixin):
         author = get_object_or_404(User, id=self.kwargs.get(self.lookup_field))
         serializer.save(user=self.request.user, author=author)
 
-    # def perform_destroy(self, instance):
-    #     author = get_object_or_404(User, id=self.kwargs.get('author_id'))
-    #     user = self.request.user
-    #     instance = get_object_or_404(Follow, author=author, user=user)
-    #     instance.delete()
-    #     try:
-    #         instance.delete()
-    #     except Http404:
-    #         raise ValidationError('Не найден ОБЪЕКТ для удаления')
-    #     return Response(status=status.HTTP_204_NO_CONTENT)
     def destroy(self, request, *args, **kwargs):
         author = get_object_or_404(User, id=self.kwargs.get('author_id'))
         user = self.request.user
