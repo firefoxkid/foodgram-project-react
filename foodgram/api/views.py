@@ -64,7 +64,7 @@ class IngredientsViewSet(ListOneMixin):
 class RecipeViewSet(viewsets.ModelViewSet):
     queryset = Recipe.objects.all()
     permission_classes = (OwnerOrReadOnly,)
-    filter_backends = [DjangoFilterBackend]
+    filter_backends = (DjangoFilterBackend,)
     filterset_class = RecipeFilter
     pagination_class = PaginatorLimit
 
@@ -95,9 +95,9 @@ class RecipeViewSet(viewsets.ModelViewSet):
         response['Content-Disposition'] = attachment
         return response
 
-    def get_queryset(self):
-        queryset = Recipe.objects.all()
-        return queryset.add_flags(self.request.user.id)
+    # def get_queryset(self):
+    #     queryset = Recipe.objects.all()
+    #     return queryset.add_flags(self.request.user.id)
 
 
 class SubscriptionListView(ListAPIView):
