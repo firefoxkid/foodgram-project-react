@@ -79,10 +79,10 @@ jobs:
         username: ${{ secrets.USER }}
         key: ${{ secrets.SSH_KEY }}
         passphrase: ${{ secrets.PASSPHRASE }}
-        script: |
-          
+        script: |         
           sudo docker-compose down
           sudo docker-compose rm backend
+          sudo docker rmi firefoxkid/foodgram:latest -f
           sudo docker-compose rm nginx
           pwd
           cat << EOF > .env
