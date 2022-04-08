@@ -15,6 +15,7 @@ class CustomUserCreateSerializer(UserCreateSerializer):
         model = User
         fields = ('email', 'id', 'username', 'first_name', 'last_name',
                   'password')
+        read_only_fields = ['id']
 
 
 class CustomUserSerializer(UserSerializer):
@@ -24,6 +25,7 @@ class CustomUserSerializer(UserSerializer):
         model = User
         fields = ('email', 'id', 'username', 'first_name', 'last_name',
                   'is_subscribed')
+        read_only_fields = ['id']
 
     def get_is_subscribed(self, author):
         user = self.context.get('request').user

@@ -1,3 +1,4 @@
+from django.contrib.auth import get_user_model
 from django.db.models import Count, Exists, OuterRef, Sum
 from django.http import Http404, HttpResponse
 from django.shortcuts import get_object_or_404
@@ -24,7 +25,9 @@ from .serializers import (CustomUserSerializer, FavoriteSerializer,
 from recipes.models import (Favorite, Ingredient,  # isort:skip
                             IngredientInRecipe, Recipe,  # isort:skip
                             ShoppingCart, Tag)  # isort:skip
-from users.models import Follow, User  # isort:skip
+from users.models import Follow  # isort:skip
+
+User = get_user_model()
 
 
 class CustomUserViewSet(UserViewSet):
