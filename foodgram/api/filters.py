@@ -18,7 +18,7 @@ class RecipeFilter(FilterSet):
         choices=enumerate([0, 1]),
         method='filter_is_in_shopping_cart'
     )
-    author = ModelChoiceFilter(queryset=User.objects.all())
+    #  author = ModelChoiceFilter(queryset=User.objects.all())
     tags = ModelMultipleChoiceFilter(
         field_name='tags__slug',
         to_field_name='slug',
