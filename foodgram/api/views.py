@@ -1,6 +1,6 @@
 from django.contrib.auth import get_user_model
 from django.db.models import Count, Exists, OuterRef, Sum
-from django.http import Http404, HttpResponse
+from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from djoser.views import UserViewSet
@@ -9,7 +9,7 @@ from rest_framework.decorators import action
 from rest_framework.generics import ListAPIView
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
-from rest_framework.serializers import ValidationError
+#  from rest_framework.serializers import ValidationError
 from rest_framework.viewsets import ReadOnlyModelViewSet
 
 from .filters import RecipeFilter
@@ -135,13 +135,14 @@ class SubscriptionViewSet(CreateDestroyMixin):
         serializer.save(user=self.request.user, author=author)
 
     def perform_destroy(self, instance):
-        author = get_object_or_404(User, id=self.kwargs.get(self.lookup_field))
+        author = get_object_or_404(User, id=self.kwargs.get('author_id'))
         user = self.request.user
         instance = get_object_or_404(Follow, author=author, user=user)
-        try:
-            instance.delete()
-        except Http404:
-            raise ValidationError('Не найден ОБЪЕКТ для удаления')
+        instance.delete()
+        # try:
+        #     instance.delete()
+        # except Http404:
+        #     raise ValidationError('Не найден ОБЪЕКТ для удаления')
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
