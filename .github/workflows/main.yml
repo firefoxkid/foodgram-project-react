@@ -41,7 +41,7 @@ jobs:
         uses: docker/build-push-action@v2 
         with:
           push: true
-          context: foodgram/foodgram
+          context: foodgram/
           tags: firefoxkid/foodgram:latest
 
   deploy:
