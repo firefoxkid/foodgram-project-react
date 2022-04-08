@@ -1,5 +1,4 @@
-from django_filters import (ChoiceFilter, FilterSet,
-                            ModelMultipleChoiceFilter)
+from django_filters import ChoiceFilter, FilterSet, ModelMultipleChoiceFilter
 from rest_framework.filters import SearchFilter
 
 from recipes.models import Recipe, Tag  # isort:skip
