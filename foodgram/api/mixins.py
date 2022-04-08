@@ -41,12 +41,18 @@ class CustomShoppingFavoriteMixin(CreateDestroyMixin):
         recipe = get_object_or_404(Recipe, id=self.kwargs.get('recipe_id'))
         serializer.save(user=self.request.user, recipe=recipe)
 
-    def perform_destroy(self, instance):
+    # def perform_destroy(self, instance):
+    #     recipe = get_object_or_404(Recipe, id=self.kwargs.get('recipe_id'))
+    #     user = self.request.user
+    #     instance = get_object_or_404(self.model, recipe=recipe, user=user)
+    #     try:
+    #         instance.delete()
+    #     except Http404:
+    #         raise ValidationError('Не найден ОБЪЕКТ для удаления')
+    #     return Response(status=status.HTTP_204_NO_CONTENT)
+    def destroy(self, request, *args, **kwargs):
         recipe = get_object_or_404(Recipe, id=self.kwargs.get('recipe_id'))
         user = self.request.user
         instance = get_object_or_404(self.model, recipe=recipe, user=user)
-        try:
-            instance.delete()
-        except Http404:
-            raise ValidationError('Не найден ОБЪЕКТ для удаления')
+        self.perform_destroy(instance)
         return Response(status=status.HTTP_204_NO_CONTENT)
