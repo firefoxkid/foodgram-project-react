@@ -142,6 +142,7 @@ class SubscriptionViewSet(CreateDestroyMixin):
         instance = get_object_or_404(Follow, author=author, user=user)
         instance.delete()
 
+
 class ShoppingListViewSet(CustomShoppingFavoriteMixin):
     model = ShoppingCart
     serializer_class = ShoppingListSerializer
