@@ -199,6 +199,7 @@ class RecipeWriteSerializer(RecipeGetSerializer):
 
 
 class RecipeInFollowSerializer(serializers.ModelSerializer):
+    image = ImageField()
 
     class Meta:
         model = Recipe
@@ -239,18 +240,23 @@ class SubscriptionSerializer(serializers.ModelSerializer):
                                        read_only=True)
     last_name = serializers.CharField(source='author.last_name',
                                       read_only=True)
-    recipes_count = serializers.IntegerField(read_only=True)
+    # recipes_count = serializers.IntegerField(read_only=True)
+
     is_subscribed = serializers.BooleanField(read_only=True)
     # recipes = RecipeGetSerializer(source='author.recipes',
     #                               many=True,
     #                               read_only=True)
     recipes = serializers.SerializerMethodField(read_only=True)
+    recipes_count = SerializerMethodField()
 
     class Meta:
         model = Follow
         fields = ('email', 'id', 'username',
                   'first_name', 'last_name',
                   'recipes_count', 'recipes', 'is_subscribed')
+
+    def get_recipes_count(self, obj):
+        return obj.author.recipes.count()
 
     def get_recipes(self, obj):
         request = self.context.get('request')
