@@ -123,8 +123,10 @@ class SubscriptionViewSet(CreateDestroyMixin):
     lookup_field = 'author_id'
 
     def get_queryset(self):
-        author = get_object_or_404(User, id=self.kwargs.get(self.lookup_field))
-        return Follow.objects.filter(author=author)
+        # author = get_object_or_404(User,
+        #                            id=self.kwargs.get(self.lookup_field))
+        # return Follow.objects.filter(author=author)
+        return Follow.objects.filter(user=self.request.user)
 
     def perform_create(self, serializer):
         author = get_object_or_404(User, id=self.kwargs.get(self.lookup_field))
