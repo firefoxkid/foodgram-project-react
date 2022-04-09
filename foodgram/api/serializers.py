@@ -258,10 +258,10 @@ class SubscriptionSerializer(serializers.ModelSerializer):
         if request.GET.get('recipes_limit'):
             recipes_limit = int(request.GET.get('recipes_limit'))
             queryset = Recipe.objects.filter(author=obj.author).order_by(
-                'pub_date')[:recipes_limit]
+                '-pub_date')[:recipes_limit]
         else:
             queryset = Recipe.objects.filter(author=obj.author).order_by(
-                'pub_date')
+                '-pub_date')
         return RecipeInFollowSerializer(queryset,
                                         read_only=True,
                                         many=True).data
