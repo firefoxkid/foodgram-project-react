@@ -198,11 +198,11 @@ class RecipeWriteSerializer(RecipeGetSerializer):
                   'cooking_time')
 
 
-class RecipeFollowSerializer(serializers.ModelSerializer):
+class RecipeInFollowSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Recipe
-        fields = ('id', 'name', 'cooking_time',)
+        fields = ('id', 'name', 'cooking_time', 'image')
         read_only_fields = ('id',)
 
 
@@ -241,15 +241,26 @@ class SubscriptionSerializer(serializers.ModelSerializer):
                                       read_only=True)
     recipes_count = serializers.IntegerField(read_only=True)
     is_subscribed = serializers.BooleanField(read_only=True)
-    recipes = RecipeGetSerializer(source='author.recipes',
-                                  many=True,
-                                  read_only=True)
+    # recipes = RecipeGetSerializer(source='author.recipes',
+    #                               many=True,
+    #                               read_only=True)
+    recipes = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = Follow
         fields = ('email', 'id', 'username',
                   'first_name', 'last_name',
                   'recipes_count', 'recipes', 'is_subscribed')
+
+    def get_recipes(self, obj):
+        request = self.context.get('request')
+        if request.GET.get('recipes_limit'):
+            recipes_limit = int(request.GET.get('recipes_limit'))
+            queryset = Recipe.objects.filter(author__id=obj.id).order_by('id')[
+                :recipes_limit]
+        else:
+            queryset = Recipe.object.filter(author__id=obj.id).order_by('id')
+        return RecipeInFollowSerializer(queryset, many=True).data
 
     def validate(self, data):
         request = self.context.get('request')
