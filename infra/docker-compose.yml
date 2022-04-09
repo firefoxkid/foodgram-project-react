@@ -16,10 +16,6 @@ services:
     image: firefoxkid/foodgram:latest
     env_file:
       - ./.env
-    #build:
-    # context: ../foodgram
-    # dockerfile: Dockerfile
-    #restart: always
     volumes:
       - static_value:/app/static/
       - media_value:/app/media/
@@ -32,6 +28,8 @@ services:
       dockerfile: Dockerfile
     volumes:
       - ./frontend/:/app/result_build/
+    depends_on:
+      - backend
 
   nginx:
     image: nginx:1.19.3
@@ -44,7 +42,7 @@ services:
       - ./frontend/build:/usr/share/nginx/html/
       - ../docs/:/usr/share/nginx/html/api/docs/
     depends_on:
-      - backend
+      - frontend
 
 volumes: 
   static_value:

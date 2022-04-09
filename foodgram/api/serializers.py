@@ -240,12 +240,7 @@ class SubscriptionSerializer(serializers.ModelSerializer):
                                        read_only=True)
     last_name = serializers.CharField(source='author.last_name',
                                       read_only=True)
-    # recipes_count = serializers.IntegerField(read_only=True)
-
     is_subscribed = serializers.BooleanField(read_only=True)
-    # recipes = RecipeGetSerializer(source='author.recipes',
-    #                               many=True,
-    #                               read_only=True)
     recipes = serializers.SerializerMethodField(read_only=True)
     recipes_count = SerializerMethodField()
 
@@ -270,7 +265,6 @@ class SubscriptionSerializer(serializers.ModelSerializer):
         return RecipeInFollowSerializer(queryset,
                                         read_only=True,
                                         many=True).data
-        # return RecipeGetSerializer(queryset, many=True).data
 
     def validate(self, data):
         request = self.context.get('request')
