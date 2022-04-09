@@ -137,10 +137,10 @@ class SubscriptionViewSet(CreateDestroyMixin):
     #     self.perform_destroy(instance)
     #     return Response(status=status.HTTP_204_NO_CONTENT)
     def perform_destroy(self, instance):
-        author = get_object_or_404(User, pk=self.kwargs.get('author_id'))
+        author = get_object_or_404(User, id=self.kwargs.get('author_id'))
         instance = get_object_or_404(Follow,
                                      author=author,
-                                     user=self.request.user)
+                                     user=self.user)
         instance.delete()
 
 
