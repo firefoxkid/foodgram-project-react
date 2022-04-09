@@ -267,7 +267,8 @@ class SubscriptionSerializer(serializers.ModelSerializer):
         else:
             queryset = Recipe.objects.filter(author__id=obj.id).order_by(
                 'pub_date')
-        return RecipeInFollowSerializer(queryset, many=True).data
+        # return RecipeInFollowSerializer(queryset, many=True).data
+        return RecipeGetSerializer(queryset, many=True).data
 
     def validate(self, data):
         request = self.context.get('request')
