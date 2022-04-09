@@ -262,13 +262,15 @@ class SubscriptionSerializer(serializers.ModelSerializer):
         request = self.context.get('request')
         if request.GET.get('recipes_limit'):
             recipes_limit = int(request.GET.get('recipes_limit'))
-            queryset = Recipe.objects.filter(author__id=obj.id).order_by(
+            queryset = Recipe.objects.filter(author=obj.author).order_by(
                 'pub_date')[:recipes_limit]
         else:
-            queryset = Recipe.objects.filter(author__id=obj.id).order_by(
+            queryset = Recipe.objects.filter(author=obj.author).order_by(
                 'pub_date')
-        # return RecipeInFollowSerializer(queryset, many=True).data
-        return RecipeGetSerializer(queryset, many=True).data
+        return RecipeInFollowSerializer(queryset,
+                                        read_only=True,
+                                        many=True).data
+        # return RecipeGetSerializer(queryset, many=True).data
 
     def validate(self, data):
         request = self.context.get('request')
